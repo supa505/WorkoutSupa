@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="description" content="Supa's Iron Forge — jadwal & pelacak workout mingguan.">
+<title>🔥 Supa's Iron Forge</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0d0d;--card:#1a1a1a;--card2:#232323;--orange:#ff6a00;--orange2:#ff8c33;
+  --orange3:#ff4500;--text:#f0f0f0;--muted:#a0a0a0;--green:#00c853;--green2:#00e676;
+  --red:#ff5252;--border:#333;--glow:0 0 20px rgba(255,106,0,.28);--radius:14px;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.4;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange2);outline-offset:2px;border-radius:8px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--orange);color:#000;padding:8px 14px;border-radius:8px;font-weight:700;z-index:300}
+.skip:focus{left:8px}
+
+/* Top bar */
+.topbar{background:linear-gradient(135deg,#1a1a1a 0%,#2a1a0a 100%);
+  padding:14px max(16px,env(safe-area-inset-right)) 14px max(16px,env(safe-area-inset-left));
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+  display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid var(--orange);position:sticky;top:0;z-index:100}
+.topbar h1{font-size:1.3rem;font-weight:900;letter-spacing:.5px;color:var(--orange);
+  background:linear-gradient(90deg,var(--orange),var(--orange2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.streak{background:var(--card);padding:7px 14px;border-radius:20px;font-size:.85rem;border:1px solid var(--orange);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.streak b{color:var(--orange2);font-weight:800}
+
+.warn{margin:12px 16px 0;padding:10px 14px;border-radius:12px;background:rgba(255,82,82,.12);border:1px solid rgba(255,82,82,.45);font-size:.82rem}
+
+/* Layout */
+.layout{max-width:760px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.summary,.workout,.history{min-width:0}
+.summary{display:grid;gap:12px}
+@media(min-width:960px){
+  .layout{max-width:1120px;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto 1fr;gap:20px;padding:24px;
+    grid-template-areas:"workout summary" "workout history";align-items:start}
+  .workout{grid-area:workout}.summary{grid-area:summary}.history{grid-area:history}
+}
+
+/* Motivation */
+.motivation{padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,rgba(255,106,0,.15),rgba(255,69,0,.08));
+  border:1px solid rgba(255,106,0,.3);text-align:center}
+.motivation .quote{font-size:.92rem;font-style:italic;color:var(--orange2);margin-bottom:4px}
+.motivation .author{font-size:.75rem;color:var(--muted)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--card);border-radius:var(--radius);padding:14px 10px;text-align:center;border:1px solid var(--border)}
+.stat .num{font-size:1.7rem;font-weight:900;line-height:1.1;color:var(--orange);
+  background:linear-gradient(90deg,var(--orange),var(--orange2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat .label{font-size:.7rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+@media(min-width:520px) and (max-width:959px){.stats{grid-template-columns:repeat(4,1fr)}}
+
+/* Weekly progress */
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.panel h2{font-size:.9rem;font-weight:700;color:var(--orange);margin-bottom:10px}
+.progress-bar{height:14px;background:var(--card2);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--orange3),var(--orange),var(--orange2));border-radius:10px;transition:width .5s ease}
+.progress-fill.full{background:linear-gradient(90deg,var(--green),var(--green2))}
+.progress-meta{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+
+/* Tabs */
+.tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.tab{min-height:60px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;cursor:pointer;color:var(--muted);
+  font-weight:700;transition:background .2s,border-color .2s;position:relative}
+.tab .t-name{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+.tab .t-date{font-size:1.05rem;color:var(--text);line-height:1.1}
+.tab .t-mark{font-size:.7rem;min-height:.9rem;color:var(--green2)}
+.tab:hover{background:#262626}
+.tab.active{background:linear-gradient(135deg,var(--orange),var(--orange3));border-color:var(--orange2);color:#000}
+.tab.active .t-date,.tab.active .t-mark{color:#000}
+.tab.is-today::after{content:'';position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--orange2)}
+.tab.active.is-today::after{background:#000}
+@media(max-width:380px){.layout{padding:12px}.tabs{gap:4px}.tab{min-height:56px}.tab .t-name{font-size:.66rem}.tab .t-date{font-size:.95rem}}
+
+/* Day section */
+.day-section.enter{animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.day-head{margin-bottom:12px}
+.eyebrow{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{background:var(--orange);color:#000;font-size:.65rem;padding:3px 9px;border-radius:10px;font-weight:800;letter-spacing:.5px}
+.day-head h2{font-size:1.35rem;font-weight:800;margin-top:2px}
+.day-head .meta{font-size:.82rem;color:var(--muted);margin-top:2px}
+
+/* Buttons */
+.btn{min-height:48px;padding:10px 22px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;border:2px solid transparent;
+  transition:background .2s,color .2s,box-shadow .2s,border-color .2s;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:transparent}
+.btn.primary{border-color:var(--green);color:var(--green2);background:rgba(0,200,83,.08);flex:1}
+.btn.primary:hover{background:var(--green);color:#000;box-shadow:0 0 18px rgba(0,200,83,.35)}
+.btn.primary:disabled{border-color:var(--border);color:var(--muted);background:var(--card2);cursor:not-allowed;box-shadow:none}
+.btn.ghost{border-color:var(--border);color:var(--muted);background:var(--card)}
+.btn.ghost:hover{border-color:var(--orange);color:var(--text)}
+.btn.danger{background:var(--red);color:#000;border-color:var(--red)}
+.btn.danger:hover{background:#ff7373}
+.btn.small{min-height:44px;padding:8px 14px;font-size:.85rem}
+
+.session-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.session-bar.bottom{margin:14px 0 0}
+.session-bar .hint{font-size:.78rem;color:var(--muted);flex-basis:100%}
+.status{flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;
+  background:var(--green);color:#000;font-weight:800;font-size:.95rem;padding:10px 16px}
+
+/* Exercise cards */
+.exercise-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.exercise{background:var(--card);border-radius:var(--radius);padding:14px 14px 14px 18px;display:flex;align-items:center;gap:12px;
+  border:1px solid var(--border);transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+.exercise::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--orange),var(--orange3))}
+.exercise:hover{border-color:var(--orange);box-shadow:var(--glow)}
+.ex-icon{font-size:1.7rem;min-width:36px;text-align:center}
+.ex-info{flex:1;min-width:0}
+.ex-info h3{font-size:1rem;font-weight:700;margin-bottom:6px;overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.78rem;color:var(--text);background:var(--card2);padding:3px 9px;border-radius:7px;border:1px solid var(--border)}
+.chip .k{color:var(--muted);margin-right:3px}
+.ex-weight{background:linear-gradient(135deg,var(--orange),var(--orange3));color:#000;padding:6px 10px;border-radius:10px;text-align:center;min-width:62px}
+.ex-weight small{display:block;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8}
+.ex-weight strong{font-size:.95rem;font-weight:900;white-space:nowrap}
+@media(max-width:380px){.ex-icon{font-size:1.4rem;min-width:28px}.ex-weight{min-width:54px;padding:5px 8px}}
+
+/* Rest day */
+.rest-card{background:linear-gradient(135deg,#1a2a1a,#0d1a0d);border:1px solid #2a4a2a;border-radius:16px;padding:36px 20px;text-align:center}
+.rest-card .emoji{font-size:2.6rem;margin-bottom:10px}
+.rest-card h2{color:var(--green2);font-size:1.25rem;margin-bottom:8px}
+.rest-card p{color:var(--muted);font-size:.9rem}
+.rest-card .rest-note{margin-top:14px;font-size:.8rem;color:#7fbf8f}
+
+/* Calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.cal-head h2{margin:0;font-size:.95rem}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:1.1rem;font-weight:700}
+.icon-btn:hover:not(:disabled){border-color:var(--orange)}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.cal-dow{font-size:.65rem;text-align:center;color:var(--muted);text-transform:uppercase;padding-bottom:2px}
+.cal-day{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;background:var(--card2);border:1px solid var(--border);color:var(--text);line-height:1.1}
+.cal-day .mk{font-style:normal;font-size:.6rem;font-weight:800;min-height:.7rem}
+.cal-day.empty{background:transparent;border:none}
+.cal-day.future{color:#5c5c5c;background:transparent}
+.cal-day.rest{border-style:dashed;border-color:#3d5a3d;color:#7fbf8f;background:rgba(0,200,83,.04)}
+.cal-day.missed{color:var(--muted);border-color:#4a3030;background:rgba(255,82,82,.07)}
+.cal-day.done{background:var(--green);color:#000;border-color:var(--green2)}
+.cal-day.today{box-shadow:0 0 0 2px var(--orange2);border-color:var(--orange2)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:.72rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px;border:1px solid var(--border);display:inline-block}
+.legend .l-done{background:var(--green);border-color:var(--green2)}
+.legend .l-today{box-shadow:0 0 0 2px var(--orange2);border-color:var(--orange2)}
+.legend .l-rest{border:1px dashed #3d5a3d}
+.legend .l-missed{background:rgba(255,82,82,.2);border-color:#4a3030}
+.note{font-size:.74rem;color:var(--muted);margin-top:10px}
+
+.reset-section{text-align:center;margin-top:16px}
+.reset-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:10px 22px;min-height:44px;border-radius:12px;font-size:.82rem;cursor:pointer;transition:all .2s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* Dialog & toast */
+dialog{margin:auto;border:1px solid var(--border);border-radius:16px;background:var(--card);color:var(--text);padding:22px;width:min(92vw,400px)}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+dialog h2{font-size:1.1rem;margin-bottom:8px}
+dialog p{font-size:.88rem;color:var(--muted);margin-bottom:18px}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#2b2b2b;border:1px solid var(--orange);
+  padding:10px 18px;border-radius:12px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:400;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--orange);border-radius:4px}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#workout">Lewati ke jadwal latihan</a>
+
+<header class="topbar">
+  <h1>🔥 IRON FORGE</h1>
+  <div class="streak" id="streakChip" title="Streak = sesi latihan berturut-turut yang sudah dikonfirmasi. Hari istirahat tidak menambah dan tidak memutus streak.">
+    <span aria-hidden="true">🔥</span> <b id="streakCount">0</b> <span>streak</span>
+  </div>
+</header>
+
+<div class="warn" id="storageWarn" role="status" hidden>
+  ⚠️ Penyimpanan browser tidak tersedia (mode privat?). Progres hanya tersimpan selama halaman ini terbuka.
+</div>
+
+<main class="layout">
+
+  <section class="summary" aria-label="Ringkasan progres">
+    <div class="motivation">
+      <div class="quote" id="quoteText">"The only bad workout is the one that didn't happen."</div>
+      <div class="author" id="quoteAuthor">— Unknown</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="totalDone">0</div><div class="label">Total Selesai</div></div>
+      <div class="stat"><div class="num" id="thisWeek">0</div><div class="label">Minggu Ini</div></div>
+      <div class="stat"><div class="num" id="thisMonth">0</div><div class="label">Bulan Ini</div></div>
+      <div class="stat"><div class="num" id="bestStreak">0</div><div class="label">Streak Terbaik</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>📊 Progress Minggu Ini</h2>
+      <div class="progress-bar" id="progressBar" role="progressbar" aria-label="Progress workout minggu ini" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-meta"><span id="weekRange"></span><span id="progressText">0/6 sesi · 0%</span></div>
+    </div>
+  </section>
+
+  <section class="workout" id="workout" aria-label="Jadwal latihan">
+    <div class="tabs" id="tabs" role="group" aria-label="Pilih hari latihan"></div>
+    <div id="content"></div>
+  </section>
+
+  <section class="history" aria-label="Riwayat latihan">
+    <div class="panel">
+      <div class="cal-head">
+        <button type="button" class="icon-btn" id="calPrev" aria-label="Bulan sebelumnya">‹</button>
+        <h2 id="calTitle" aria-live="polite">📅 Riwayat</h2>
+        <button type="button" class="icon-btn" id="calNext" aria-label="Bulan berikutnya">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="l-done"></i>Selesai</span>
+        <span><i class="l-today"></i>Hari ini</span>
+        <span><i class="l-rest"></i>Istirahat</span>
+        <span><i class="l-missed"></i>Belum dikonfirmasi</span>
+      </div>
+      <p class="note">Hanya sesi yang kamu konfirmasi yang dihitung. Hari istirahat tidak masuk hitungan workout.</p>
+    </div>
+    <div class="reset-section">
+      <button type="button" class="reset-btn" id="resetBtn">🗑️ Reset Semua Data</button>
+    </div>
+  </section>
+
+</main>
+
+<dialog id="resetDialog" aria-labelledby="rdTitle">
+  <form method="dialog">
+    <h2 id="rdTitle">Reset semua data?</h2>
+    <p>Seluruh riwayat workout, statistik, dan streak akan dihapus permanen dari browser ini dan tidak bisa dikembalikan.</p>
+    <div class="dlg-actions">
+      <button type="submit" value="cancel" class="btn ghost small" id="rdCancel">Batal</button>
+      <button type="submit" value="confirm" class="btn danger small">Ya, hapus semua</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ================= Konstanta & jadwal ================= */
+const STORAGE_KEY = 'ironforge';                 // kunci lama dipertahankan
+const BACKUP_KEY = 'ironforge_backup_v1';        // salinan data lama sebelum migrasi
+const CORRUPT_KEY = 'ironforge_corrupt_backup';  // salinan data rusak (jika ada)
+
+const DAYS = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const DAY_SHORT = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const QUOTES = [
+  {q:"The only bad workout is the one that didn't happen.", a:"Unknown"},
+  {q:"No pain, no gain. Shut up and train.", a:"Gym Wisdom"},
+  {q:"Your body can stand almost anything. It's your mind you have to convince.", a:"Unknown"},
+  {q:"The pain you feel today will be the strength you feel tomorrow.", a:"Arnold"},
+  {q:"Don't wish for it. Work for it.", a:"Unknown"},
+  {q:"Discipline is doing it even when you don't feel like it.", a:"Unknown"},
+  {q:"Konsistensi mengalahkan motivasi.", a:"Iron Forge"},
+  {q:"Satu rep lebih baik dari nol rep.", a:"Iron Forge"},
+  {q:"Besi tidak akan mengangkat dirinya sendiri.", a:"Iron Forge"},
+  {q:"The iron never lies to you.", a:"Henry Rollins"}
+];
+
+const SCHEDULE = {
+  Senin: {focus:'Chest & Triceps', icon:'💪', exercises:[
+    {name:'Dumbbell Bench Press',sets:'4×10',weight:'20kg',rest:'90s',icon:'🏋️'},
+    {name:'Dumbbell Fly',sets:'3×12',weight:'14kg',rest:'60s',icon:'🦅'},
+    {name:'Floor Press',sets:'3×10',weight:'20kg',rest:'90s',icon:'💪'},
+    {name:'Overhead Tricep Extension',sets:'3×12',weight:'10kg',rest:'60s',icon:'🔱'},
+    {name:'Tricep Kickback',sets:'3×12',weight:'8kg',rest:'60s',icon:'🦾'},
+    {name:'Diamond Push Up',sets:'3×max',weight:'BW',rest:'60s',icon:'💎'}
+  ]},
+  Selasa: {focus:'Back & Biceps', icon:'🔙', exercises:[
+    {name:'Pull Up',sets:'4×max',weight:'BW',rest:'120s',icon:'🧗'},
+    {name:'Chin Up',sets:'3×max',weight:'BW',rest:'90s',icon:'💪'},
+    {name:'Dumbbell Row',sets:'4×10',weight:'20kg',rest:'90s',icon:'🚣'},
+    {name:'Reverse Fly',sets:'3×12',weight:'8kg',rest:'60s',icon:'🦅'},
+    {name:'Dumbbell Curl',sets:'3×12',weight:'10kg',rest:'60s',icon:'💪'},
+    {name:'Hammer Curl',sets:'3×12',weight:'10kg',rest:'60s',icon:'🔨'}
+  ]},
+  Rabu: {focus:'Legs', icon:'🦵', exercises:[
+    {name:'Goblet Squat',sets:'4×12',weight:'20kg',rest:'90s',icon:'🏋️'},
+    {name:'Dumbbell Lunge',sets:'3×10/leg',weight:'16kg',rest:'90s',icon:'🚶'},
+    {name:'Romanian Deadlift',sets:'4×10',weight:'20kg',rest:'90s',icon:'🏗️'},
+    {name:'Calf Raise',sets:'4×15',weight:'20kg',rest:'60s',icon:'🦵'}
+  ]},
+  Kamis: {focus:'Shoulders & Traps', icon:'🎯', exercises:[
+    {name:'Overhead Press',sets:'4×10',weight:'16kg',rest:'90s',icon:'🏋️'},
+    {name:'Lateral Raise',sets:'4×12',weight:'8kg',rest:'60s',icon:'🦅'},
+    {name:'Front Raise',sets:'3×12',weight:'8kg',rest:'60s',icon:'⬆️'},
+    {name:'Shrug',sets:'4×15',weight:'20kg',rest:'60s',icon:'🤷'},
+    {name:'Face Pull (band/towel)',sets:'3×15',weight:'BW',rest:'60s',icon:'🎯'},
+    {name:'Arnold Press',sets:'3×10',weight:'14kg',rest:'90s',icon:'💪'}
+  ]},
+  Jumat: {focus:'Upper Body Power', icon:'⚡', exercises:[
+    {name:'Dumbbell Bench Press',sets:'5×5',weight:'20kg',rest:'120s',icon:'🏋️'},
+    {name:'Pull Up (weighted jika bisa)',sets:'4×6',weight:'BW+',rest:'120s',icon:'🧗'},
+    {name:'Dumbbell Row Heavy',sets:'4×8',weight:'20kg',rest:'90s',icon:'🚣'},
+    {name:'Push Up Variations',sets:'3×max',weight:'BW',rest:'60s',icon:'💪'},
+    {name:'Farmer Walk',sets:'3×30s',weight:'20kg',rest:'60s',icon:'🚶'},
+    {name:'Dumbbell Pullover',sets:'3×12',weight:'14kg',rest:'60s',icon:'🌊'}
+  ]},
+  Sabtu: {focus:'Legs & Full Body', icon:'🦵', exercises:[
+    {name:'Bulgarian Split Squat',sets:'3×10/leg',weight:'16kg',rest:'90s',icon:'🏋️'},
+    {name:'Sumo Squat',sets:'4×12',weight:'20kg',rest:'90s',icon:'🏗️'},
+    {name:'Single Leg RDL',sets:'3×10/leg',weight:'10kg',rest:'60s',icon:'🦩'},
+    {name:'Dumbbell Swing',sets:'3×15',weight:'16kg',rest:'60s',icon:'🔔'}
+  ]},
+  Minggu: {focus:'Hari Istirahat', icon:'😴', rest:true}
+};
+const WEEK_TARGET = DAYS.filter(function(d){return !SCHEDULE[d].rest;}).length; // jumlah hari latihan per minggu
+
+/* ================= Helper tanggal ================= */
+function pad(n){return String(n).padStart(2,'0');}
+function dateKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function parseKey(k){
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(k));
+  if(!m) return null;
+  const y=+m[1], mo=+m[2], d=+m[3];
+  const dt = new Date(y, mo-1, d);
+  if(dt.getFullYear()!==y || dt.getMonth()!==mo-1 || dt.getDate()!==d) return null;
+  return dt;
+}
+function startOfDay(d){return new Date(d.getFullYear(), d.getMonth(), d.getDate());}
+function addDays(d,n){return new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);}
+function dayIndex(d){return (d.getDay()+6)%7;}            // 0 = Senin ... 6 = Minggu
+function mondayOf(d){return addDays(d, -dayIndex(d));}
+function isRestDate(d){return !!SCHEDULE[DAYS[dayIndex(d)]].rest;}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+/* ================= Penyimpanan (localStorage + migrasi) ================= */
+let memoryOnly = false;
+const memStore = {};
+function lsGet(k){
+  try{ return localStorage.getItem(k); }
+  catch(e){ memoryOnly = true; return Object.prototype.hasOwnProperty.call(memStore,k) ? memStore[k] : null; }
+}
+function lsSet(k,v){
+  try{ localStorage.setItem(k,v); }
+  catch(e){ memoryOnly = true; memStore[k] = v; }
+}
+function lsRemove(k){
+  try{ localStorage.removeItem(k); }
+  catch(e){ memoryOnly = true; }
+  delete memStore[k];
+}
+
+function freshState(){return {version:2, done:{}, legacyRest:[]};}
+
+/* Format v2: { version:2, done:{ 'YYYY-MM-DD': true }, legacyRest:[...] }
+   Format lama: { done:{ 'YYYY-M-D': true }, currentTab:n } — kunci tanggal tidak di-pad dan
+   hari Minggu (istirahat) bisa ikut tercatat. Migrasi: normalisasi kunci, gabungkan duplikat,
+   pindahkan entri hari istirahat ke legacyRest (disimpan, tapi tidak dihitung sebagai workout). */
+function loadState(){
+  const raw = lsGet(STORAGE_KEY);
+  if(raw === null) return freshState();
+  let parsed;
+  try{ parsed = JSON.parse(raw); }catch(e){ parsed = null; }
+  if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)){
+    if(lsGet(CORRUPT_KEY) === null) lsSet(CORRUPT_KEY, raw);
+    return freshState();
+  }
+  const needsMigration = parsed.version !== 2;
+  if(needsMigration && lsGet(BACKUP_KEY) === null) lsSet(BACKUP_KEY, raw);
+
+  const out = freshState();
+  const src = (parsed.done && typeof parsed.done === 'object' && !Array.isArray(parsed.done)) ? parsed.done : {};
+  Object.keys(src).forEach(function(k){
+    const v = src[k];
+    if(!(v === true || (v && typeof v === 'object'))) return;
+    const dt = parseKey(k);
+    if(!dt) return;
+    const nk = dateKey(dt);
+    if(isRestDate(dt)){ if(out.legacyRest.indexOf(nk) < 0) out.legacyRest.push(nk); }
+    else out.done[nk] = true;
+  });
+  if(Array.isArray(parsed.legacyRest)){
+    parsed.legacyRest.forEach(function(k){
+      const dt = parseKey(k);
+      if(dt && out.legacyRest.indexOf(dateKey(dt)) < 0) out.legacyRest.push(dateKey(dt));
+    });
+  }
+  if(needsMigration) lsSet(STORAGE_KEY, JSON.stringify(out));
+  return out;
+}
+function save(){ lsSet(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ================= Statistik (murni, hanya dari tanggal yang dikonfirmasi) ================= */
+function computeStats(done, today){
+  const keys = Object.keys(done).filter(function(k){return done[k] === true && parseKey(k);});
+  const mon = mondayOf(today), sun = addDays(mon, 6);
+  let week = 0, month = 0, earliest = null;
+  keys.forEach(function(k){
+    const d = parseKey(k);
+    if(d >= mon && d <= sun) week++;
+    if(d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth()) month++;
+    if(!earliest || d < earliest) earliest = d;
+  });
+
+  // Streak saat ini: mundur dari hari ini. Hari istirahat dilewati (tidak menambah, tidak memutus).
+  // Hari ini yang belum dikonfirmasi tidak memutus streak; hari latihan lampau yang kosong memutusnya.
+  const todayK = dateKey(today);
+  let streak = 0;
+  if(earliest){
+    for(let c = today; c >= earliest; c = addDays(c,-1)){
+      if(isRestDate(c)) continue;
+      if(done[dateKey(c)] === true) streak++;
+      else if(dateKey(c) === todayK) continue;
+      else break;
+    }
+  }
+  // Streak terbaik sepanjang riwayat.
+  let best = 0, run = 0;
+  if(earliest){
+    for(let c = earliest; c <= today; c = addDays(c,1)){
+      if(isRestDate(c)) continue;
+      if(done[dateKey(c)] === true){ run++; if(run > best) best = run; }
+      else if(dateKey(c) === todayK) continue;
+      else run = 0;
+    }
+  }
+  return {total: keys.length, week: week, month: month, streak: streak, best: best, earliest: earliest};
+}
+
+/* ================= State aplikasi ================= */
+let state = loadState();
+let today = startOfDay(new Date());
+let sel = dayIndex(today);                                   // tab terpilih (0-6) pada minggu berjalan
+let calView = {y: today.getFullYear(), m: today.getMonth()};
+
+function syncDate(){
+  const n = startOfDay(new Date());
+  if(dateKey(n) !== dateKey(today)){
+    today = n;
+    sel = dayIndex(today);
+    calView = {y: today.getFullYear(), m: today.getMonth()};
+    return true;
+  }
+  return false;
+}
+function $(id){return document.getElementById(id);}
+
+/* ================= Aksi konfirmasi ================= */
+function setDone(key, value){
+  syncDate();
+  const d = parseKey(key);
+  if(!d) return false;
+  if(isRestDate(d)) return false;     // hari istirahat tidak pernah dihitung sebagai workout
+  if(d > today) return false;         // hari yang belum tiba tidak bisa dikonfirmasi
+  if(value) state.done[dateKey(d)] = true;
+  else delete state.done[dateKey(d)];
+  save();
+  return true;
+}
+
+let toastTimer;
+function toast(msg){
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){el.classList.remove('show');}, 2400);
+}
+
+/* ================= Render ================= */
+function weekDates(){
+  const mon = mondayOf(today);
+  return DAYS.map(function(_,i){return addDays(mon,i);});
+}
+function fmtShort(d){return d.getDate()+' '+MONTHS[d.getMonth()].substring(0,3);}
+
+function renderSummary(stats){
+  $('totalDone').textContent = stats.total;
+  $('thisWeek').textContent = stats.week;
+  $('thisMonth').textContent = stats.month;
+  $('bestStreak').textContent = stats.best;
+  $('streakCount').textContent = stats.streak;
+  $('streakChip').setAttribute('aria-label', 'Streak '+stats.streak+' sesi latihan berturut-turut');
+
+  const pct = Math.min(100, Math.round(stats.week/WEEK_TARGET*100));
+  const fill = $('progressFill');
+  fill.style.width = pct+'%';
+  fill.classList.toggle('full', stats.week >= WEEK_TARGET);
+  const bar = $('progressBar');
+  bar.setAttribute('aria-valuemax', WEEK_TARGET);
+  bar.setAttribute('aria-valuenow', Math.min(stats.week, WEEK_TARGET));
+  bar.setAttribute('aria-valuetext', stats.week+' dari '+WEEK_TARGET+' sesi, '+pct+' persen');
+  $('progressText').textContent = stats.week+'/'+WEEK_TARGET+' sesi · '+pct+'%';
+  const wd = weekDates();
+  $('weekRange').textContent = fmtShort(wd[0])+' – '+fmtShort(wd[6]);
+}
+
+function buildTabs(){
+  const wd = weekDates(), todayK = dateKey(today);
+  $('tabs').innerHTML = wd.map(function(d,i){
+    const key = dateKey(d), rest = !!SCHEDULE[DAYS[i]].rest, done = state.done[key] === true, isToday = key === todayK;
+    const status = rest ? 'hari istirahat' : done ? 'selesai' : d > today ? 'belum tiba' : 'belum dikonfirmasi';
+    const label = DAYS[i]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+(isToday ? ', hari ini' : '')+', '+status;
+    return '<button type="button" class="tab'+(i===sel?' active':'')+(isToday?' is-today':'')+'" data-idx="'+i+'" aria-pressed="'+(i===sel)+'"'+
+      (isToday?' aria-current="date"':'')+' aria-label="'+esc(label)+'">'+
+      '<span class="t-name">'+DAY_SHORT[i]+'</span><span class="t-date">'+d.getDate()+'</span>'+
+      '<span class="t-mark" aria-hidden="true">'+(rest?'😴':done?'✓':'')+'</span></button>';
+  }).join('');
+}
+
+function actionHTML(key, done, future, pos){
+  if(done){
+    return '<div class="session-bar '+pos+'"><div class="status"><span aria-hidden="true">✓</span> Selesai</div>'+
+      '<button type="button" class="btn ghost" data-action="undo" data-date="'+key+'" data-pos="'+pos+'" aria-label="Batalkan konfirmasi selesai">Batalkan</button></div>';
+  }
+  if(future){
+    return '<div class="session-bar '+pos+'"><button type="button" class="btn primary" disabled aria-disabled="true">Tandai Selesai</button>'+
+      '<span class="hint">Belum bisa ditandai sebelum harinya tiba.</span></div>';
+  }
+  return '<div class="session-bar '+pos+'"><button type="button" class="btn primary" data-action="done" data-date="'+key+'" data-pos="'+pos+'">Tandai Selesai</button></div>';
+}
+
+function buildContent(animate){
+  const d = weekDates()[sel], key = dateKey(d), sched = SCHEDULE[DAYS[sel]];
+  const isToday = key === dateKey(today), future = d > today, done = state.done[key] === true;
+  const enter = animate ? ' enter' : '';
+
+  if(sched.rest){
+    $('content').innerHTML =
+      '<div class="rest-card day-section'+enter+'"><div class="emoji" aria-hidden="true">😴💤</div>'+
+      '<h2>Hari Istirahat</h2>'+
+      '<p>Recovery itu penting bro. Otot tumbuh waktu istirahat.<br>Stretching ringan aja hari ini. 🧘</p>'+
+      '<p class="rest-note">Hari istirahat tidak perlu ditandai, tidak dihitung sebagai workout, dan tidak memutus streak.</p></div>';
+    return;
+  }
+
+  let html = '<div class="day-section'+enter+'"><div class="day-head">'+
+    '<p class="eyebrow">'+DAYS[sel]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+(isToday?' <span class="badge">HARI INI</span>':'')+'</p>'+
+    '<h2>'+sched.icon+' '+esc(sched.focus)+'</h2>'+
+    '<p class="meta">'+sched.exercises.length+' latihan</p></div>'+
+    actionHTML(key, done, future, 'top')+'<ol class="exercise-list">';
+
+  sched.exercises.forEach(function(ex){
+    const bw = /^BW/.test(ex.weight);
+    html += '<li class="exercise"><div class="ex-icon" aria-hidden="true">'+ex.icon+'</div>'+
+      '<div class="ex-info"><h3>'+esc(ex.name)+'</h3><div class="chips">'+
+      '<span class="chip"><span class="k">Set×Rep</span>'+esc(ex.sets)+'</span>'+
+      '<span class="chip"><span class="k">Istirahat</span>'+esc(ex.rest)+'</span></div></div>'+
+      '<div class="ex-weight"'+(bw?' title="Berat badan sendiri"':'')+'><small>Beban</small><strong>'+esc(ex.weight)+'</strong></div></li>';
+  });
+  html += '</ol>'+actionHTML(key, done, future, 'bottom')+'</div>';
+  $('content').innerHTML = html;
+}
+
+function buildCalendar(stats){
+  const y = calView.y, m = calView.m, todayK = dateKey(today);
+  const first = new Date(y, m, 1), dim = new Date(y, m+1, 0).getDate(), offset = dayIndex(first);
+  $('calTitle').textContent = '📅 '+MONTHS[m]+' '+y;
+  $('calNext').disabled = (y > today.getFullYear()) || (y === today.getFullYear() && m >= today.getMonth());
+
+  let html = DAY_SHORT.map(function(s){return '<div class="cal-dow" aria-hidden="true">'+s+'</div>';}).join('');
+  for(let i=0;i<offset;i++) html += '<div class="cal-day empty" aria-hidden="true"></div>';
+  for(let n=1;n<=dim;n++){
+    const d = new Date(y, m, n), key = dateKey(d);
+    let cls = 'cal-day', mark = '', status;
+    if(state.done[key] === true){ cls += ' done'; mark = '✓'; status = 'selesai'; }
+    else if(isRestDate(d)){ cls += ' rest'; mark = 'zZ'; status = 'hari istirahat'; }
+    else if(d > today){ cls += ' future'; status = 'belum tiba'; }
+    else if(key === todayK){ status = 'belum selesai'; }
+    else if(stats.earliest && d > stats.earliest){ cls += ' missed'; status = 'belum dikonfirmasi'; }
+    else { status = 'tidak ada catatan'; }
+    if(key === todayK){ cls += ' today'; status = 'hari ini, '+status; }
+    html += '<div class="'+cls+'" role="img" aria-label="'+n+' '+MONTHS[m]+', '+status+'" title="'+n+' '+MONTHS[m]+' — '+status+'">'+
+      '<span>'+n+'</span><i class="mk" aria-hidden="true">'+mark+'</i></div>';
+  }
+  $('calGrid').innerHTML = html;
+}
+
+function render(animate){
+  const stats = computeStats(state.done, today);
+  renderSummary(stats);
+  buildTabs();
+  buildContent(!!animate);
+  buildCalendar(stats);
+}
+
+/* ================= Event ================= */
+$('tabs').addEventListener('click', function(e){
+  const b = e.target.closest('.tab');
+  if(!b) return;
+  sel = +b.getAttribute('data-idx');
+  render(true);
+  const t = document.querySelector('.tab[data-idx="'+sel+'"]');
+  if(t) t.focus();
+});
+
+$('content').addEventListener('click', function(e){
+  const b = e.target.closest('[data-action]');
+  if(!b || b.disabled) return;
+  const key = b.getAttribute('data-date'), act = b.getAttribute('data-action'), pos = b.getAttribute('data-pos');
+  if(!setDone(key, act === 'done')){ render(); return; }
+  render();
+  toast(act === 'done' ? 'Workout ditandai selesai ✓' : 'Konfirmasi dibatalkan');
+  const nb = document.querySelector('#content [data-pos="'+pos+'"][data-action]');
+  if(nb) nb.focus();
+});
+
+$('calPrev').addEventListener('click', function(){
+  calView = calView.m === 0 ? {y: calView.y-1, m: 11} : {y: calView.y, m: calView.m-1};
+  buildCalendar(computeStats(state.done, today));
+});
+$('calNext').addEventListener('click', function(){
+  if($('calNext').disabled) return;
+  calView = calView.m === 11 ? {y: calView.y+1, m: 0} : {y: calView.y, m: calView.m+1};
+  buildCalendar(computeStats(state.done, today));
+});
+
+function doReset(){
+  [STORAGE_KEY, BACKUP_KEY, CORRUPT_KEY].forEach(lsRemove);
+  state = freshState();
+  syncDate();
+  sel = dayIndex(today);
+  calView = {y: today.getFullYear(), m: today.getMonth()};
+  render(true);
+  toast('Semua data telah direset');
+}
+const dlg = $('resetDialog');
+$('resetBtn').addEventListener('click', function(){
+  if(typeof dlg.showModal === 'function'){ dlg.returnValue = ''; dlg.showModal(); }
+  else if(confirm('Reset semua data workout? Tindakan ini tidak bisa dibatalkan.')) doReset();
+});
+dlg.addEventListener('close', function(){
+  if(dlg.returnValue === 'confirm') doReset();
+  $('resetBtn').focus();
+});
+
+/* Pergantian hari/minggu saat halaman terbuka, dan sinkron antar tab browser */
+function checkDate(){ if(syncDate()) render(true); }
+setInterval(checkDate, 30000);
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) checkDate(); });
+window.addEventListener('focus', checkDate);
+window.addEventListener('storage', function(e){
+  if(e.key === STORAGE_KEY || e.key === null){ state = loadState(); render(); }
+});
+
+/* ================= Init ================= */
+(function(){
+  try{ localStorage.setItem('__if_test','1'); localStorage.removeItem('__if_test'); }catch(e){ memoryOnly = true; }
+  $('storageWarn').hidden = !memoryOnly;
+  const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  $('quoteText').textContent = '"'+q.q+'"';
+  $('quoteAuthor').textContent = '— '+q.a;
+  render(false);
+})();
+</script>
+</body>
+</html>
